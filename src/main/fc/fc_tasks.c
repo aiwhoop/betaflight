@@ -352,7 +352,7 @@ void fcTasksInit(void)
     setTaskEnabled(TASK_RCDEVICE, rcdeviceIsEnabled());
 #endif
 #ifdef USE_MAVLINK_ATTRATE
-    setTaskEnabled(TASK_MAVLINK_ATTRATE, feature(FEATURE_MAVLINK_ATTRATE));
+    setTaskEnabled(TASK_MAVLINK_ATTRATE, true); //feature(FEATURE_MAVLINK_ATTRATE));
 #endif
 #endif
 }

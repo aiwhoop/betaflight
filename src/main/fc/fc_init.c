@@ -608,7 +608,7 @@ void init(void)
 #endif
 
 #ifdef USE_MAVLINK_ATTRATE
-    if (feature(FEATURE_MAVLINK_ATTRATE)) {
+    if (true) { //feature(FEATURE_MAVLINK_ATTRATE)) {
         mavlinkAttrateInit();
     }
 #endif

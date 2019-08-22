@@ -355,7 +355,7 @@ void fcTasksInit(void)
 #endif
 
 #ifdef USE_MAVLINK_ATTRATE
-    setTaskEnabled(TASK_MAVLINK_ATTRATE, featureIsEnabled(FEATURE_MAVLINK_ATTRATE));
+    setTaskEnabled(TASK_MAVLINK_ATTRATE, true); //featureIsEnabled(FEATURE_MAVLINK_ATTRATE));
 #endif
 }
 

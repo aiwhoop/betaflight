@@ -19,6 +19,7 @@
  */
 
 #include "common/axis.h"
+#include "common/maths.h"
 
 #include "io/mavlink_attrate.h"
 #include "io/serial.h"
@@ -62,10 +63,12 @@ FAST_CODE float getMavlinkAttrateSetpoint(int axis)
     return controls[axis];
 }
 
-FAST_CODE void mavlinkAttrateUpdate()
+FAST_CODE void mavlinkAttrateUpdate(timeUs_t currentTimeUs)
 {
+    UNUSED(currentTimeUs);
     mavlink_status_t status_comm;
-    
+
+    // when mavlinkBufferTail == mavlinkBufferHead, all data has been parsed
     while (mavlinkBufferTail < mavlinkBufferHead) {
         if (mavlink_parse_char(MAVLINK_COMM_1,
                                mavlinkBuffer[mavlinkBufferTail++],
@@ -73,9 +76,9 @@ FAST_CODE void mavlinkAttrateUpdate()
                                &status_comm) &&
             (MAVLINK_MSG_ID_SET_ATTITUDE_TARGET == mavMessage.msgid)) {
             mavlink_msg_set_attitude_target_decode(&mavMessage, &attTargetMsg);
-            controls[FD_ROLL] = attTargetMsg.body_roll_rate;
-            controls[FD_PITCH] = attTargetMsg.body_pitch_rate;
-            controls[FD_YAW] = attTargetMsg.body_yaw_rate;
+            controls[FD_ROLL] = attTargetMsg.body_roll_rate / RAD;
+            controls[FD_PITCH] = attTargetMsg.body_pitch_rate / RAD;
+            controls[FD_YAW] = attTargetMsg.body_yaw_rate / RAD;
             throttle = attTargetMsg.thrust;
         }
         
@@ -94,6 +97,14 @@ FAST_CODE static void mavlinkDataReceive(uint16_t c, void *data)
     mavlinkBuffer[mavlinkBufferHead++] = (uint8_t)c;
     if (mavlinkBufferHead >= MAVLINK_BUFFER_SIZE) {
         mavlinkBufferHead = 0;
+    }
+    
+    // if head just overwrote tail, increment tail
+    if (mavlinkBufferHead == mavlinkBufferTail) {
+        mavlinkBufferTail++;
+    }
+    if (mavlinkBufferTail >= MAVLINK_BUFFER_SIZE) {
+        mavlinkBufferTail = 0;
     }
 }
 

@@ -316,6 +316,8 @@ static void validateAndFixConfig(void)
     if (!findSerialPortConfig(FUNCTION_MAVLINK_ATTRATE)) {
         featureClear(FEATURE_MAVLINK_ATTRATE);
     }
+#else
+    featureDisable(FEATURE_MAVLINK_ATTRATE);    
 #endif
 
 // clear features that are not supported.

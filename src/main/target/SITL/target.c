@@ -66,6 +66,8 @@ static udpLink_t stateLink, pwmLink;
 static pthread_mutex_t updateLock;
 static pthread_mutex_t mainLoopLock;
 
+serialPinConfig_t serialPinConfig_System;
+
 int timeval_sub(struct timespec *result, struct timespec *x, struct timespec *y);
 
 int lockMainPID(void) {

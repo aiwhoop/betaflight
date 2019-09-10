@@ -549,8 +549,9 @@ static void calculateThrottleAndCurrentMotorEndpoints(timeUs_t currentTimeUs)
             rcThrottlePrevious = rxConfig()->midrc; // When disarmed set to mid_rc. It always results in positive direction after arming.
         }
 
-        if (rcCommand[THROTTLE] <= rcCommand3dDeadBandLow ||
-            (IS_RC_MODE_ACTIVE(BOXMAVLINKATTRATE) &&
+        if ((!mavlinkAttrateActive &&
+             rcCommand[THROTTLE] <= rcCommand3dDeadBandLow) ||
+            (mavlinkAttrateActive &&
              mavlinkCommandThrottle <= MAVLINK_ATTRATE_DEADBAND_LOW)) {
             // INVERTED
             motorRangeMin = motorOutputLow;
@@ -569,8 +570,9 @@ static void calculateThrottleAndCurrentMotorEndpoints(timeUs_t currentTimeUs)
             rcThrottlePrevious = rcCommand[THROTTLE];
             throttle = rcCommand3dDeadBandLow - rcCommand[THROTTLE];
             currentThrottleInputRange = rcCommandThrottleRange3dLow;
-        } else if ((rcCommand[THROTTLE] >= rcCommand3dDeadBandHigh) ||
-                   (IS_RC_MODE_ACTIVE(BOXMAVLINKATTRATE) &&
+        } else if ((!mavlinkAttrateActive &&
+                    rcCommand[THROTTLE] >= rcCommand3dDeadBandHigh) ||
+                   (mavlinkAttrateActive &&
                     mavlinkCommandThrottle >= MAVLINK_ATTRATE_DEADBAND_LOW)) {
             // NORMAL
             motorRangeMin = deadbandMotor3dHigh;

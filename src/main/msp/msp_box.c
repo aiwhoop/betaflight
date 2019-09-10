@@ -307,7 +307,7 @@ void initActiveBoxIds(void)
 #endif
 
 #ifdef USE_MAVLINK_ATTRATE
-    if (featureIsEnabled(FEATURE_MAVLINK_ATTRATE)) {
+    if (true) { //featureIsEnabled(FEATURE_MAVLINK_ATTRATE)) {
         BME(BOXMAVLINKATTRATE);
     }
 #endif

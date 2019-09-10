@@ -350,6 +350,9 @@ void fcTasksInit(void)
 #ifdef USE_RCDEVICE
     setTaskEnabled(TASK_RCDEVICE, rcdeviceIsEnabled());
 #endif
+#ifdef USE_MAVLINK_ATTRATE
+    setTaskEnabled(TASK_MAVLINK_ATTRATE, feature(FEATURE_MAVLINK_ATTRATE));
+#endif
 #endif
 }
 
@@ -469,6 +472,14 @@ cfTask_t cfTasks[TASK_COUNT] = {
         .staticPriority = TASK_PRIORITY_HIGH,
     },
 
+#ifdef USE_MAVLINK_ATTRATE
+    [TASK_MAVLINK_ATTRATE] = {
+        .taskName = "MAVLINK_ATTRATE",
+        .taskFunc = mavlinkAttrateUpdate,
+        .desiredPeriod = TASK_PERIOD_HZ(500),
+        .staticPriority = TASK_PRIORITY_HIGH),
+#endif
+    
 #ifdef USE_BEEPER
     [TASK_BEEPER] = {
         .taskName = "BEEPER",
@@ -622,4 +633,5 @@ cfTask_t cfTasks[TASK_COUNT] = {
     },
 #endif
 #endif
+
 };

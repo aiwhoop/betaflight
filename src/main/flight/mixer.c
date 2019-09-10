@@ -64,6 +64,8 @@
 #include "sensors/battery.h"
 #include "sensors/gyro.h"
 
+#include "io/mavlink_attrate.h"
+
 PG_REGISTER_WITH_RESET_TEMPLATE(mixerConfig_t, mixerConfig, PG_MIXER_CONFIG, 0);
 
 #ifndef TARGET_DEFAULT_MIXER
@@ -324,6 +326,10 @@ static FAST_RAM_ZERO_INIT uint16_t rcCommand3dDeadBandLow;
 static FAST_RAM_ZERO_INIT uint16_t rcCommand3dDeadBandHigh;
 static FAST_RAM_ZERO_INIT float rcCommandThrottleRange, rcCommandThrottleRange3dLow, rcCommandThrottleRange3dHigh;
 
+#ifdef USE_MAVLINK_ATTRATE
+static FAST_RAM_ZERO_INIT bool mavlinkAttrateActive;
+#endif // USE_MAVLINK_ATTRATE
+
 uint8_t getMotorCount(void)
 {
     return motorCount;
@@ -536,12 +542,16 @@ static void calculateThrottleAndCurrentMotorEndpoints(timeUs_t currentTimeUs)
     static timeUs_t reversalTimeUs = 0; // time when motors last reversed in 3D mode
     float currentThrottleInputRange = 0;
 
+    const float mavlinkCommandThrottle = getMavlinkThrottle();
+  
     if (feature(FEATURE_3D)) {
         if (!ARMING_FLAG(ARMED)) {
             rcThrottlePrevious = rxConfig()->midrc; // When disarmed set to mid_rc. It always results in positive direction after arming.
         }
 
-        if (rcCommand[THROTTLE] <= rcCommand3dDeadBandLow) {
+        if (rcCommand[THROTTLE] <= rcCommand3dDeadBandLow ||
+            (IS_RC_MODE_ACTIVE(BOXMAVLINKATTRATE) &&
+             mavlinkCommandThrottle <= MAVLINK_ATTRATE_DEADBAND_LOW)) {
             // INVERTED
             motorRangeMin = motorOutputLow;
             motorRangeMax = deadbandMotor3dLow;
@@ -559,7 +569,9 @@ static void calculateThrottleAndCurrentMotorEndpoints(timeUs_t currentTimeUs)
             rcThrottlePrevious = rcCommand[THROTTLE];
             throttle = rcCommand3dDeadBandLow - rcCommand[THROTTLE];
             currentThrottleInputRange = rcCommandThrottleRange3dLow;
-        } else if (rcCommand[THROTTLE] >= rcCommand3dDeadBandHigh) {
+        } else if ((rcCommand[THROTTLE] >= rcCommand3dDeadBandHigh) ||
+                   (IS_RC_MODE_ACTIVE(BOXMAVLINKATTRATE) &&
+                    mavlinkCommandThrottle >= MAVLINK_ATTRATE_DEADBAND_LOW)) {
             // NORMAL
             motorRangeMin = deadbandMotor3dHigh;
             motorRangeMax = motorOutputHigh;
@@ -575,6 +587,9 @@ static void calculateThrottleAndCurrentMotorEndpoints(timeUs_t currentTimeUs)
         } else if ((rcThrottlePrevious <= rcCommand3dDeadBandLow &&
                 !flight3DConfigMutable()->switched_mode3d) ||
                 isMotorsReversed()) {
+          
+            // TODO(genemerewether) - what is the condition here for mavlink attrate
+          
             // INVERTED_TO_DEADBAND
             motorRangeMin = motorOutputLow;
             motorRangeMax = deadbandMotor3dLow;
@@ -618,6 +633,12 @@ static void calculateThrottleAndCurrentMotorEndpoints(timeUs_t currentTimeUs)
         motorOutputMixSign = 1;
     }
 
+#ifdef USE_MAVLINK_ATTRATE
+    if (mavlinkAttrateActive) {
+        throttle = fabsf(mavlinkCommandThrottle) * currentThrottleInputRange;
+    }
+#endif // USE_MAVLINK_ATTRATE
+    
     throttle = constrainf(throttle / currentThrottleInputRange, 0.0f, 1.0f);
 }
 
@@ -906,3 +927,12 @@ void mixerSetThrottleAngleCorrection(int correctionValue)
 {
     throttleAngleCorrection = correctionValue;
 }
+
+#ifdef USE_MAVLINK_ATTRATE
+void mixerSetMavlinkAttrateState(bool newState)
+{
+    if (mavlinkAttrateActive != newState) {
+        mavlinkAttrateActive = newState;
+    }
+}
+#endif // USE_MAVLINK_ATTRATE

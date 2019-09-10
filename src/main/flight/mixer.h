@@ -137,3 +137,4 @@ bool mixerIsTricopter(void);
 
 void mixerSetThrottleAngleCorrection(int correctionValue);
 
+void mixerSetMavlinkAttrateState(bool newState);

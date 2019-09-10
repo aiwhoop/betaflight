@@ -51,6 +51,7 @@
 #include "flight/mixer.h"
 
 #include "io/gps.h"
+#include "io/mavlink_attrate.h"
 
 #include "sensors/gyro.h"
 #include "sensors/acceleration.h"

@@ -119,6 +119,7 @@
 #include "io/servos.h"
 #include "io/gimbal.h"
 #include "io/ledstrip.h"
+#include "io/mavlink_attrate.h"
 #include "io/dashboard.h"
 #include "io/asyncfatfs/asyncfatfs.h"
 #include "io/transponder_ir.h"
@@ -606,6 +607,12 @@ void init(void)
     }
 #endif
 
+#ifdef USE_MAVLINK_ATTRATE
+    if (feature(FEATURE_MAVLINK_ATTRATE)) {
+        mavlinkAttrateInit();
+    }
+#endif
+    
 #ifdef USE_LED_STRIP
     ledStripInit();
 

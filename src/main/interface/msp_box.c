@@ -298,7 +298,7 @@ void initActiveBoxIds(void)
 #endif // USE_ACRO_TRAINER
 
 #ifdef USE_MAVLINK_ATTRATE
-    if (feature(FEATURE_MAVLINK_ATTRATE)) {
+    if (true) { //feature(FEATURE_MAVLINK_ATTRATE)) {
         BME(BOXMAVLINKATTRATE);
     }
 #endif // USE_MAVLINK_ATTRATE

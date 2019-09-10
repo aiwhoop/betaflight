@@ -72,6 +72,7 @@
 #include "io/rcdevice_cam.h"
 #include "io/usb_cdc_hid.h"
 #include "io/vtx.h"
+#include "io/mavlink_attrate.h"
 
 #include "msp/msp_serial.h"
 
@@ -477,7 +478,8 @@ cfTask_t cfTasks[TASK_COUNT] = {
         .taskName = "MAVLINK_ATTRATE",
         .taskFunc = mavlinkAttrateUpdate,
         .desiredPeriod = TASK_PERIOD_HZ(500),
-        .staticPriority = TASK_PRIORITY_HIGH),
+        .staticPriority = TASK_PRIORITY_HIGH,
+    },
 #endif
     
 #ifdef USE_BEEPER
